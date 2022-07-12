@@ -12,7 +12,8 @@ const View = (() => {
         inputmobile: 'mobile',
         inputemail: 'email',
         errordiv: '#error',
-        search: '#search'
+        search: '#search',
+        noresult: '#noResult'
 
     };
 
@@ -60,6 +61,15 @@ const Model = ((view) => {
 
     class State {
         #contactlist = [];
+        #contacts = [];
+
+        get contacts(){
+            return this.#contacts;
+        }
+
+        set contacts(list){
+            this.#contacts = [...list];
+        }
 
         get contactlist() {
             return this.#contactlist;
@@ -71,6 +81,7 @@ const Model = ((view) => {
             const tablebody = document.querySelector(view.domobj.tablebody)
             const tmp = view.createTable(this.#contactlist);
             view.render(tablebody, tmp);
+
         }
     }
 
@@ -86,16 +97,9 @@ const Model = ((view) => {
  * CONTROLLER
  */
 const Controller = ((view, model) => {
+
     const state = new model.State();
     let { domobj } = view;
-    /*
-        addbtn: '#submit',
-        table: '#summaryTable',
-        tablebody: '#tablebody',
-        inputname: '#name',
-        inputmobile: '#mobile',
-        inputemail: '#email',
-    */
 
 
     const addContact = () => {
@@ -109,9 +113,10 @@ const Controller = ((view, model) => {
             const arr = [name, email, mobile];
 
             if (isValid(...arr)) {
-                const contact = new model.Contact(name.value, email.value, mobile.value);
+                const contact = new model.Contact(name.value, mobile.value, email.value);
 
-                state.contactlist = [contact, ...state.contactlist];
+                state.contacts = [contact, ...state.contacts];
+                state.contactlist = [...state.contacts];
                 error.classList.add("dn");
 
                 arr.forEach(element => {
@@ -126,16 +131,32 @@ const Controller = ((view, model) => {
 
     const searchMobile = () => {
         const search = document.querySelector(domobj.search);
-
+        const noResult = document.querySelector(domobj.noresult);
 
         search.addEventListener('keyup', (event) => {
-            console.log(state.contactlist);
+            // console.log(state.contactlist);
+            console.log(event.target.value);
+            if(event.target.value.length > 0){
 
-            function cb(acc, initial){
-                // if(){
-                    
-                // }
+                // model.search = event.target.value;
+
+                function checkMobile(number) {
+                    return number.mobile.includes(event.target.value);
+                }
+
+                state.contactlist = [...state.contacts.slice().filter(checkMobile)];
+
+                if(state.contactlist.length == 0){
+                    noResult.classList.remove("dn");
+                } else {
+                    noResult.classList.add("dn");
+                }
+                
+            } else {
+                state.contactlist = [...state.contacts];
+                noResult.classList.add("dn");
             }
+            
         })
     }
 
