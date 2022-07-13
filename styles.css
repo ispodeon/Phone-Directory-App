@@ -124,3 +124,10 @@ th, td {
   min-width: 150px;
   text-align: left;
 }
+.flexCenter{
+    display: grid;
+    place-items: center;
+}
+tbody tr:nth-child(odd){
+  background-color: #f2f2f2;
+}

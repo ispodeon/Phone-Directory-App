@@ -13,7 +13,8 @@ const View = (() => {
         inputemail: 'email',
         errordiv: '#error',
         search: '#search',
-        noresult: '#noResult'
+        noresult: '#noResult',
+        namecolumn: '#nameColumn'
 
     };
 
@@ -62,6 +63,7 @@ const Model = ((view) => {
     class State {
         #contactlist = [];
         #contacts = [];
+        #sortcounter = 1;
 
         get contacts(){
             return this.#contacts;
@@ -82,6 +84,14 @@ const Model = ((view) => {
             const tmp = view.createTable(this.#contactlist);
             view.render(tablebody, tmp);
 
+        }
+
+        get sortcounter() {
+            return this.#sortcounter;
+        }
+
+        set sortcounter(count){
+            this.#sortcounter = count;
         }
     }
 
@@ -123,6 +133,8 @@ const Controller = ((view, model) => {
                     element.value = '';
                 });
 
+                state.sortcounter = 1;
+
             } else {
                 error.classList.remove("dn");
             }
@@ -135,7 +147,7 @@ const Controller = ((view, model) => {
 
         search.addEventListener('keyup', (event) => {
             // console.log(state.contactlist);
-            console.log(event.target.value);
+            // console.log(event.target.value);
             if(event.target.value.length > 0){
 
                 // model.search = event.target.value;
@@ -155,9 +167,48 @@ const Controller = ((view, model) => {
             } else {
                 state.contactlist = [...state.contacts];
                 noResult.classList.add("dn");
+                state.sortcounter = 1;
             }
             
         })
+    }
+
+    const nameSort = () => {
+        const namecol = document.querySelector(domobj.namecolumn);
+        namecol.addEventListener('click', (event) => {
+            // console.log(event);
+            if(state.sortcounter%2 != 0){
+                state.contactlist = state.contactlist.sort((a, b) => {
+                    return sortString('name',a, b)
+                }).reverse();
+                state.sortcounter++;
+            } else {
+                state.contactlist = state.contactlist.sort((a, b) => {
+                    return sortString('name',a, b)
+                });
+                state.sortcounter++;
+            }
+
+            
+
+        })
+    }
+
+    const helpCompare = (a, b) => {
+        if (a < b) {
+            return -1;
+        }
+        if (a > b) {
+            return 1;
+        }
+        return 0;
+    }
+
+    const sortString = (id, a, b) => {
+        let nameA = a[`${id}`].toLowerCase();
+        let nameB = b[`${id}`].toLowerCase();
+
+        return helpCompare(nameA, nameB);
     }
 
     const isValid = (name, email, mobile) => {
@@ -187,6 +238,7 @@ const Controller = ((view, model) => {
     const bootstrap = () => {
         addContact();
         searchMobile();
+        nameSort();
     }
 
     return { bootstrap }
